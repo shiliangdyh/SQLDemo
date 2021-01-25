@@ -4,7 +4,7 @@ import android.database.Cursor;
 
 public class User {
     private String name;
-    private String job;
+    private String pwd;
     private int age;
 
     public static
@@ -13,8 +13,8 @@ public class User {
         User user = new
                 User();
         user.setName(cursor.getString(cursor.getColumnIndex(DatabaseHelper.UserColumns.NAME)));
-        user.setJob(cursor.getString(cursor.getColumnIndex(DatabaseHelper.UserColumns.JOB)));
         user.setAge(cursor.getInt(cursor.getColumnIndex(DatabaseHelper.UserColumns.AGE)));
+        user.setPwd(cursor.getString(cursor.getColumnIndex(DatabaseHelper.UserColumns.PWD)));
         return user;
     }
 
@@ -22,7 +22,7 @@ public class User {
     public String toString() {
         return "User{" +
                 "name='" + name + '\'' +
-                ", job='" + job + '\'' +
+                ", pwd='" + pwd + '\'' +
                 ", age=" + age +
                 '}';
     }
@@ -35,12 +35,12 @@ public class User {
         this.name = name;
     }
 
-    public String getJob() {
-        return job;
+    public String getPwd() {
+        return pwd;
     }
 
-    public void setJob(String job) {
-        this.job = job;
+    public void setPwd(String pwd) {
+        this.pwd = pwd;
     }
 
     public int getAge() {

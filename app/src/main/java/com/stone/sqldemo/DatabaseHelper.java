@@ -1,6 +1,7 @@
 package com.stone.sqldemo;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -11,7 +12,7 @@ import com.github.commonlib.utils.LogUtils;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
 
-    public static final int DATABASE_VERSION = 28;
+    public static final int DATABASE_VERSION = 29;
     public static final String DATABASE_NAME = "test.db";
     private static DatabaseHelper databaseHelper;
 
@@ -43,10 +44,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         LogUtils.d(TAG, "onUpgrade: oldVersion=" + oldVersion + " ,newVersion=" + newVersion);
 
+        LogUtils.d(TAG, "onUpgrade: 更新前表字段 " + getColumnNames(db, TABLE_TEST));
         try {
             db.beginTransaction();
             // rename the table
-            String tempTable = TABLE_TEST + "texp_temptable";
+            String tempTable = "texp_temptable";
             String renameTableSql = "alter table " + TABLE_TEST + " rename to " + tempTable;
             db.execSQL(renameTableSql);// drop the oldtable
             String dropTableSql = "drop table if exists " + TABLE_TEST;
@@ -58,7 +60,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String insertSql = "INSERT INTO Test (_id,name,age) SELECT _id,name,age FROM texp_temptable";
             db.execSQL(insertSql);
             //Drop temp table
-            String deleteSql = "DROP TABLE IF EXISTS "+tempTable;
+            String deleteSql = "DROP TABLE IF EXISTS " + tempTable;
             db.execSQL(deleteSql);
             db.setTransactionSuccessful();
         } catch (Exception e) {
@@ -67,11 +69,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         } finally {
             db.endTransaction();
         }
+        LogUtils.d(TAG, "onUpgrade: 更新后表字段 " + getColumnNames(db, TABLE_TEST));
+        LogUtils.d(TAG, "onUpgrade: success-->");
+    }
+
+
+    // 获取升级前表中的字段
+    public static String getColumnNames(SQLiteDatabase db, String tableName) {
+        StringBuffer columnNameBuffer = null;
+        Cursor c = null;
+        try {
+            c = db.rawQuery("PRAGMA table_info(" + tableName + ")", null);
+            if (null != c) {
+                int columnIndex = c.getColumnIndex("name");
+                if (-1 == columnIndex) {
+                    return null;
+                }
+                int index = 0;
+                columnNameBuffer = new StringBuffer(c.getCount());
+                for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
+                    columnNameBuffer.append(c.getString(columnIndex));
+                    columnNameBuffer.append(",");
+                    index++;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return columnNameBuffer.toString();
     }
 
     public interface UserColumns extends BaseColumns {
         String NAME = "name";
         String JOB = "job";
         String AGE = "age";
+        String PWD = "pwd";
     }
 }
